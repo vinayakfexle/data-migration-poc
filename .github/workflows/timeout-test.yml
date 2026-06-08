@@ -21,6 +21,14 @@ jobs:
           echo "Job 1: Starting quick task"
           sleep 10
           echo "Job 1: Completed successfully"
+          
+          # Simulate a long-running process 
+          for i in {1..30}; do
+            echo "Processing step $i/120 - $(date)"
+            sleep 1
+          done
+          
+          echo "Job 2: Completed successfully"
 
   job2:
     name: Job 2 - Long Running Task (Will Timeout)
