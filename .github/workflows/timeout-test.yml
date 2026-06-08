@@ -31,7 +31,7 @@ jobs:
             
       - name: Job 2 - Task with strict step timeout
         timeout-minutes: 1
-        continue-on-error: true  
+        # continue-on-error: true  
         run: |
           trap "exit 1" SIGINT SIGTERM
           echo "Job 2: Starting long-running task"
@@ -51,7 +51,7 @@ jobs:
             
       - name: Job 3 - Execution
         timeout-minutes: 1
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           trap "exit 1" SIGINT SIGTERM
           echo "Job 3: Running because Job 2 timed out, not because it was manually cancelled."
@@ -72,7 +72,7 @@ jobs:
             
       - name: Job 4 - Execution
         timeout-minutes: 1
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           trap "exit 1" SIGINT SIGTERM
           echo "Job 4: Running because previous jobs timed out or succeeded."
@@ -92,7 +92,7 @@ jobs:
             
       - name: Job 5 - Final Execution
         timeout-minutes: 1
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           trap "exit 1" SIGINT SIGTERM
           echo "Job 5: Reached the final step successfully!"
