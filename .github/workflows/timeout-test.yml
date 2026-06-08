@@ -30,6 +30,7 @@ jobs:
     # continue-on-error ensures that even if this job times out or is cancelled,
     # the workflow will proceed to the next job instead of stopping
     continue-on-error: true
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,6 +55,7 @@ jobs:
     timeout-minutes: 1
     # continue-on-error ensures this job runs even if job2 timed out or was cancelled
     continue-on-error: true
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,4 +66,3 @@ jobs:
           echo "This step will NOT be skipped even if Job 2 timed out or was cancelled"
           sleep 15
           echo "Job 3: Completed successfully"
-
