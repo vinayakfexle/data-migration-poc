@@ -1,5 +1,4 @@
 name: Sequential Jobs with Timeout Handling
-
 on:
   push:
     branches:
@@ -11,66 +10,90 @@ jobs:
   job1:
     name: Job 1 - Quick Task
     runs-on: ubuntu-latest
-    timeout-minutes: 1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Job 1 - Quick execution
+      - name: Quick execution
         run: |
-          echo "Job 1: Starting quick task"
-          sleep 10
-          echo "Job 1: Completed successfully"
-          
-          # Simulate a long-running process 
-          for i in {1..30}; do
+          echo "Job 1 completed"
+          for i in {1..10}; do
             echo "Processing step $i/120 - $(date)"
             sleep 1
           done
-          
-          echo "Job 2: Completed successfully"
 
   job2:
     name: Job 2 - Long Running Task (Will Timeout)
     needs: job1
     runs-on: ubuntu-latest
-    timeout-minutes: 1
-    # continue-on-error ensures that even if this job times out or is cancelled,
-    # the workflow will proceed to the next job instead of stopping
-    continue-on-error: true
-    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Job 2 - Task that exceeds timeout
+            
+      - name: Job 2 - Task with strict step timeout
+        timeout-minutes: 1
+        continue-on-error: true  
         run: |
+          trap "exit 1" SIGINT SIGTERM
           echo "Job 2: Starting long-running task"
-          echo "This task will take more than 1 minute to complete"
-          
-          # Simulate a long-running process (e.g., data migration, heavy computation)
           for i in {1..120}; do
             echo "Processing step $i/120 - $(date)"
             sleep 1
           done
-          
-          echo "Job 2: Completed successfully"
 
   job3:
-    name: Job 3 - Final Task
+    name: Job 3 - Task 3
     needs: job2
     runs-on: ubuntu-latest
-    timeout-minutes: 1
-    # continue-on-error ensures this job runs even if job2 timed out or was cancelled
-    continue-on-error: true
-    if: always()
+    if: always() && !cancelled()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Check previous job status
+            
+      - name: Job 3 - Execution
+        timeout-minutes: 1
+        continue-on-error: true
         run: |
-          echo "Job 3: Running regardless of Job 2 status"
-          echo "This step will NOT be skipped even if Job 2 timed out or was cancelled"
-          sleep 15
-          echo "Job 3: Completed successfully"
+          trap "exit 1" SIGINT SIGTERM
+          echo "Job 3: Running because Job 2 timed out, not because it was manually cancelled."
+          # Simulating another potential timeout loop
+          for i in {1..20}; do
+            echo "Job 3 processing step $i..."
+            sleep 1
+          done
+
+  job4:
+    name: Job 4 - Task 4
+    needs: job3
+    runs-on: ubuntu-latest
+    if: always() && !cancelled()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+            
+      - name: Job 4 - Execution
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          trap "exit 1" SIGINT SIGTERM
+          echo "Job 4: Running because previous jobs timed out or succeeded."
+          for i in {1..50}; do
+            echo "Job 4 processing step $i..."
+            sleep 1
+          done
+
+  job5:
+    name: Job 5 - Final Task
+    needs: job4
+    runs-on: ubuntu-latest
+    if: always() && !cancelled()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+            
+      - name: Job 5 - Final Execution
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          trap "exit 1" SIGINT SIGTERM
+          echo "Job 5: Reached the final step successfully!"
+          sleep 5
